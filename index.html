@@ -92,9 +92,13 @@
     }
     h1 .nombre {
         display: block;
-        font-size: 1.4em;
+        font-size: 1.5em;
         letter-spacing: .5px;
-        background: linear-gradient(90deg, #ff5f8d, #c86bff, #ff5f8d);
+        /* Sin sombra: con background-clip:text la sombra se pinta sólida
+           encima y borra el degradado */
+        text-shadow: none;
+        -webkit-text-fill-color: transparent;
+        background: linear-gradient(90deg, #e6187f, #ff3d6e, #a13ce0, #e6187f);
         background-size: 200% auto;
         -webkit-background-clip: text; background-clip: text;
         color: transparent;
