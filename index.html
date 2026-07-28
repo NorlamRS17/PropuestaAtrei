@@ -591,13 +591,23 @@
         moverBoton();
     }
 
-    /* En móvil el touchstart se dispara ANTES del click: nunca lo alcanza */
+    /* Rozar el botón con el mouse NO cuenta como intento: solo esquiva.
+       Así en la computadora el contador no se dispara solo. */
+    function esquivar(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        moverBoton();
+    }
+
+    /* Estos sí son intentos de verdad. En móvil el touchstart se dispara
+       ANTES del click, por eso nunca lo alcanza. */
     btnNo.addEventListener('touchstart', huir, { passive: false });
     btnNo.addEventListener('pointerdown', huir);
-    btnNo.addEventListener('mouseenter', huir);
     btnNo.addEventListener('mousedown', huir);
     btnNo.addEventListener('click', huir);
-    btnNo.addEventListener('focus', huir);
+
+    /* Estos solo lo hacen huir, sin sumar */
+    btnNo.addEventListener('mouseenter', esquivar);
+    btnNo.addEventListener('focus', esquivar);
 
     function reacomodar() {
         if (btnNo.classList.contains('escapando')) moverBoton();
