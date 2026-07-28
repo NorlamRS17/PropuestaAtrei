@@ -494,7 +494,7 @@
     setInterval(function () { corazonFondo(bgHearts, false); }, 900);
 
     /* ---------- El botón "No" que se escapa ---------- */
-    var intentos = 0, timerGif = null;
+    var intentos = 0, timerGif = null, ultimoIntento = 0;
 
     var frases = [
         '¿Segura? 🥺 inténtalo otra vez',
@@ -564,6 +564,13 @@
 
     function huir(e) {
         if (e) { e.preventDefault(); e.stopPropagation(); }
+
+        /* Un mismo toque dispara varios eventos a la vez (touchstart + pointerdown
+           + los que el móvil emula). Esquivamos siempre, pero solo contamos
+           UN intento por toque. */
+        var ahora = Date.now();
+        if (ahora - ultimoIntento < 400) { moverBoton(); return; }
+        ultimoIntento = ahora;
 
         var r = btnNo.getBoundingClientRect();
         corazonRoto(r.left + r.width / 2, r.top + r.height / 2);
