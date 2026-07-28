@@ -428,7 +428,7 @@
     <h1>¡Gracias mi niña hermosa! 🥰</h1>
     <p class="sub">
         Estaré a tu lado por siempre, amor mío.<br>
-        Ahora sí, oficialmente mía y yo oficialmente tuyo 💗
+        Ahora sí, oficialmente mi novia y yo oficialmente tu novio, somos virutalitos 💗
     </p>
     <p class="firma">— Con todo mi corazón, para ti Eva ❤️</p>
 </div>
@@ -503,7 +503,14 @@
         'El "No" te tiene miedo, mira cómo huye 🏃‍♀️',
         'Ya ríndete, el destino ya lo decidió 💘',
         'Okey ya, admite que el "Sí" está más bonito ✨',
-        'Mi corazoncito no aguanta más intentos 💔'
+        'Mi corazoncito no aguanta más intentos 💔',
+        'Tienes buena puntería, pero yo tengo más ganas 😎',
+        'Ese botón se entrena todos los días, no lo alcanzas 🏃‍♀️💨',
+        'Los ositos ya empezaron a apostar por el "Sí" 🧸🧸',
+        'Te estás cansando… yo no 😌💗',
+        '¿Y si mejor le das al bonito? El rosita, sí, ese ✨',
+        'Llevas un rato en esto, eso ya es un "sí" con pasos extra 😏',
+        'Está bien, tú sigue, yo aquí te espero toda la vida 💘'
     ];
     var textosNo = ['No :(', 'no...', 'nop', 'ehh no', '¿no?', 'no 🥲', 'ya no puedo'];
 
@@ -580,8 +587,9 @@
         pregunta.classList.remove('shake'); void pregunta.offsetWidth; pregunta.classList.add('shake');
         ositoTriste();
 
-        mensaje.textContent = frases[Math.min(intentos - 1, frases.length - 1)];
-        btnNo.textContent   = textosNo[Math.min(intentos - 1, textosNo.length - 1)];
+        /* En círculo: nunca se quedan clavados en el último */
+        mensaje.textContent = frases[(intentos - 1) % frases.length];
+        btnNo.textContent   = textosNo[(intentos - 1) % textosNo.length];
 
         btnSi.style.transform = 'scale(' + Math.min(1 + intentos * 0.09, 1.7) + ')';
         btnNo.style.transform = 'scale(' + Math.max(1 - intentos * 0.1, 0.45) + ')';
