@@ -221,7 +221,11 @@
 
     /* ---------- Pantalla final ---------- */
     #final { display: none; }
-    #final.mostrar { display: block; }
+    #final.mostrar {
+        display: block;
+        /* Hueco para los 2 reproductores fijos abajo */
+        margin-bottom: 130px;
+    }
     /* Más chico aquí: el certificado es lo que importa que se vea */
     #final .gif { width: min(150px, 40vw); border-radius: 18px; }
     #final .gifwrap { min-height: 0; }
@@ -505,12 +509,83 @@
         100% { transform: rotateX(0);     opacity: 1; }
     }
 
-    /* ---------- Reproductor de música ---------- */
-    #player {
+    /* ---------- Notitas para Eva (las editas tú en el código) ---------- */
+    .notas-caja {
+        margin: 18px 4px 4px;
+        text-align: left;
+    }
+    .notas-titulo {
+        font-size: .82rem;
+        color: #b07f92;
+        letter-spacing: .4px;
+        margin: 0 0 10px;
+        text-align: center;
+    }
+    .notas-lista {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-height: 280px;
+        overflow-y: auto;
+        padding: 2px 4px 6px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .nota-item {
+        background: linear-gradient(145deg, #fff7fb, #ffe8f1);
+        border: 1.5px solid #ffd0e0;
+        border-radius: 16px 16px 16px 4px;
+        padding: 10px 12px 11px;
+        box-shadow: 0 4px 12px rgba(196, 60, 120, .12);
+        animation: notaEntra .45s ease both;
+    }
+    @keyframes notaEntra {
+        from { opacity: 0; transform: translateY(8px); }
+        to   { opacity: 1; transform: none; }
+    }
+    .nota-fecha {
+        display: block;
+        font-size: .68rem;
+        color: #c47a96;
+        margin-bottom: 4px;
+        font-family: 'Segoe UI', system-ui, sans-serif;
+    }
+    .nota-texto {
+        font-size: .9rem;
+        color: #6b2b45;
+        line-height: 1.45;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+    .nota-vacia {
+        text-align: center;
+        font-size: .85rem;
+        color: #c49aab;
+        padding: 12px 8px;
+        font-style: italic;
+    }
+
+    /* ---------- Reproductores de música ---------- */
+    #players {
         position: fixed;
         left: 50%;
-        bottom: 18px;
-        transform: translateX(-50%) translateY(140%);
+        bottom: 14px;
+        transform: translateX(-50%) translateY(160%);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 95;
+        opacity: 0;
+        transition: transform .6s cubic-bezier(.2,.9,.3,1.3), opacity .6s;
+        width: min(420px, calc(100vw - 24px));
+        pointer-events: none;
+    }
+    #players.visible {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .player-pill {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -520,14 +595,15 @@
         border: 2px solid #fff;
         border-radius: 50px;
         box-shadow: 0 10px 26px rgba(196,60,120,.3);
-        z-index: 95;
-        opacity: 0;
-        transition: transform .6s cubic-bezier(.2,.9,.3,1.3), opacity .6s;
-        max-width: calc(100vw - 24px);
+        max-width: 100%;
     }
-    #player.visible { transform: translateX(-50%) translateY(0); opacity: 1; }
+    .player-pill.recuerdo {
+        background: rgba(255, 244, 250, .96);
+        border-color: #ffe0ec;
+        box-shadow: 0 8px 20px rgba(161, 60, 196, .22);
+    }
 
-    #player button {
+    .player-pill button {
         flex: 0 0 auto;
         width: 40px; height: 40px;
         padding: 0;
@@ -539,9 +615,15 @@
         color: #fff;
         box-shadow: 0 4px 10px rgba(255,61,110,.4);
         animation: none;
+        border: none;
+        cursor: pointer;
     }
-    #player button:active { transform: scale(.9); }
-    #player button.apagado {
+    .player-pill.recuerdo button {
+        background: linear-gradient(135deg, #c45fd8, #a13ce0);
+        box-shadow: 0 4px 10px rgba(161, 60, 224, .4);
+    }
+    .player-pill button:active { transform: scale(.9); }
+    .player-pill button.apagado {
         background: #f0ecf1;
         color: #a899a3;
         box-shadow: none;
@@ -553,12 +635,18 @@
         line-height: 1.25;
         text-align: left;
         padding-right: 6px;
-        max-width: 46vw;
+        min-width: 0;
+        flex: 1;
+        overflow: hidden;
+    }
+    .cancion-info span {
+        display: block;
+        white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
     }
     .cancion-info b { color: #e63b6f; font-weight: bold; }
+    .player-pill.recuerdo .cancion-info b { color: #a13ce0; }
 
     .nota-musical {
         position: fixed;
@@ -741,18 +829,35 @@
         </div>
     </div>
 
+    <!-- Notitas: se llenan solas desde la lista NOTAS del script -->
+    <div class="notas-caja" id="notas-caja">
+        <p class="notas-titulo">Notitas para ti despues de lo sucedido</p>
+        <div class="notas-lista" id="notas-lista"></div>
+    </div>
+
     <p class="firma">— Con todo mi corazón, para ti Eva ❤️</p>
     <button class="reiniciar" id="btn-reiniciar">volver a verlo desde el principio ↺</button>
 </div>
 
 <!-- ==================== MÚSICA ==================== -->
-<audio id="audio" loop preload="auto" src="cancion.mp3"></audio>
+<audio id="audio" loop preload="auto" src="Me Quedo Aquí.mp3"></audio>
+<audio id="audio-recuerdo" loop preload="auto" src="Bacterias Vivas.mp3"></audio>
 
-<div id="player">
-    <button id="btn-play" aria-label="Pausar o reproducir">⏸</button>
-    <button id="btn-mute" aria-label="Silenciar">🔊</button>
-    <div class="cancion-info">
-        Nuestra canción<br><b id="nombre-cancion">La Excepción - Gustavo Cerati</b>
+<div id="players">
+    <div class="player-pill" id="player">
+        <button id="btn-play" aria-label="Pausar o reproducir">⏸</button>
+        <button id="btn-mute" aria-label="Silenciar">🔊</button>
+        <div class="cancion-info">
+            <span>Nuestra canción</span>
+            <b id="nombre-cancion">Me Quedo Aquí</b>
+        </div>
+    </div>
+    <div class="player-pill recuerdo" id="player-recuerdo">
+        <button id="btn-play-recuerdo" aria-label="Pausar o reproducir Bacterias Vivas">▶️</button>
+        <div class="cancion-info">
+            <span>Canción que me recuerda a ti siempre</span>
+            <b>Bacterias Vivas</b>
+        </div>
     </div>
 </div>
 
@@ -762,6 +867,52 @@
 
     var GIF_NORMAL   = 'https://media.tenor.com/2BrMVhEIsgIAAAAM/mocha-bear-kiss-bear-kiss.gif';
     var GIF_TRISTE   = 'https://media.tenor.com/EB_Q8BftsQoAAAAM/crying-bear.gif';
+
+    var NOTAS = [
+        {
+            fecha: '09 nov 2026',
+            texto: `Hola, corazón :c. Posiblemente no vuelvas a leer esto después de lo que pasó entre nosotros, pero no tengo otro lugar donde guardar lo que quiero decirte. Voy a usar este espacio para contarte mi día a día y cómo me va, aunque sé que quizás ya no te importe. Al menos así no me sentiré tan solo y podré imaginar que te lo estoy contando a ti. Este fue el lugar donde más amor te entregué, y quiero conservarlo simplemente como un recuerdo lindo.
+
+Sinceramente quisiera que lo encuentres jiji 💕, pero a su vez quisiera que no; no quiero causarte más dudas o hacerte sentir mal de nuevo. A día de hoy me culpo por lo que sucedió entre nosotros :c, me sigo culpando por nuestro «para siempre».`
+        },
+        {
+            fecha: '10 nov 2026',
+            texto: `Espero ser muy frecuente con las notas xd, no tengo a quién contarle mis cosas así que lo usaré como mi espacio, en donde solo tú sabrás cómo me va y cómo te extraño desde que no estás. Me pregunto cómo te irá, corazón, pero sé que bien, eres una mujer muy fuerte. Veo tus historias y no sabes las ganas de escribirte que tengo :,) pero no puedo hacerlo, no porque no quiera, sino que no sé si estés mejor sin mí xd, sin alguien que te atormente a cada momento. Siento que causaba mucho cansancio, generaba eso si yo estaba mal. 
+El día de hoy fue muy horrible siento que me teminaron hablando en el trabajo xd pero bueeeno que se puede hacer a seguir adelante.`
+        },
+        {
+            fecha: '11 nov 2026',
+            texto: `De hecho, la nota del 10 de nov la hice recién, pero como ya es la 1 de la mañana otra notita, me siento más calmado la verdad. Estoy en la cama desde las 8 y no puedo dormir, qué loco xd.
+Son las 11 pm; a esta hora estarías alistándote para ir al trabajito, espero te vaya súper bien corazón. Hoy no podía dormir y me sentía tan mal que quería escribirte para no sentirme tan solo jaja. Era la 1:30 am y no sabía cómo dormir, así que oré, le pedí a Diosito que me ayudara a conciliar el sueño y también por el mal día que tuve, y aunque no lo creas, dormí de una jasja. Siento que no lo he buscado últimamente, pero ayer, con un día tan malo, lo necesitaba la verdad. Para hoy me fue súper bien en el trabajo, siento que trabajé como nunca y pude hacer las cosas súper bien de verdad.
+También pedi a Diosito que te cuide mucho corazón, para que te sientas mejor y que te siga ayudando en todo lo que necesites. Te amo muchísimo corazón, y te extraño mucho también.`
+        }
+    ];
+
+    function pintarNotas() {
+        var lista = document.getElementById('notas-lista');
+        if (!lista) return;
+        lista.innerHTML = '';
+        if (!NOTAS.length) {
+            lista.innerHTML = '<p class="nota-vacia">Pronto habrá notitas aquí 💕</p>';
+            return;
+        }
+        for (var i = 0; i < NOTAS.length; i++) {
+            var n = NOTAS[i];
+            var el = document.createElement('article');
+            el.className = 'nota-item';
+            el.style.animationDelay = (i * 0.06) + 's';
+            var f = document.createElement('span');
+            f.className = 'nota-fecha';
+            f.textContent = n.fecha || '';
+            var t = document.createElement('div');
+            t.className = 'nota-texto';
+            t.textContent = n.texto || '';
+            el.appendChild(f);
+            el.appendChild(t);
+            lista.appendChild(el);
+        }
+    }
+    pintarNotas();
 
     var pregunta = document.getElementById('pregunta');
     var final    = document.getElementById('final');
@@ -994,74 +1145,132 @@
         }
     }
 
-    /* ---------- Música ---------- */
-    var audio    = document.getElementById('audio');
-    var player   = document.getElementById('player');
-    var btnPlay  = document.getElementById('btn-play');
-    var btnMute  = document.getElementById('btn-mute');
-    var VOLUMEN  = 0.65;          // volumen final (0 a 1)
+    /* ---------- Música (dos canciones; solo una suena a la vez) ---------- */
+    var audio         = document.getElementById('audio');
+    var audioRecuerdo = document.getElementById('audio-recuerdo');
+    var players       = document.getElementById('players');
+    var player        = document.getElementById('player');
+    var btnPlay       = document.getElementById('btn-play');
+    var btnMute       = document.getElementById('btn-mute');
+    var btnPlayRecuerdo = document.getElementById('btn-play-recuerdo');
+    var VOLUMEN  = 0.65;
     var hayAudio = true;
+    var hayRecuerdo = true;
 
-    /* Si el mp3 no existe o no carga, escondemos el reproductor
-       en vez de mostrar un control roto. */
     audio.addEventListener('error', function () {
         hayAudio = false;
-        player.classList.remove('visible');
+        player.style.display = 'none';
+        if (!hayRecuerdo) players.classList.remove('visible');
+    });
+    audioRecuerdo.addEventListener('error', function () {
+        hayRecuerdo = false;
+        document.getElementById('player-recuerdo').style.display = 'none';
+        if (!hayAudio) players.classList.remove('visible');
     });
 
-    /* Sube el volumen de a poquito, para que no entre de golpe */
-    function fadeIn() {
-        audio.volume = 0;
+    /** Solo una canción a la vez: al reproducir una, pausa la otra. */
+    function pausarLaOtra(excepto) {
+        if (excepto !== audio && !audio.paused) audio.pause();
+        if (excepto !== audioRecuerdo && !audioRecuerdo.paused) audioRecuerdo.pause();
+    }
+
+    function fadeIn(el) {
+        el.volume = 0;
         var paso = 0;
         var t = setInterval(function () {
             paso++;
-            audio.volume = Math.min(VOLUMEN, (paso / 30) * VOLUMEN);
+            el.volume = Math.min(VOLUMEN, (paso / 30) * VOLUMEN);
             if (paso >= 30) clearInterval(t);
         }, 60);
     }
 
-    function iconoPlay() { btnPlay.textContent = audio.paused ? '▶️' : '⏸'; }
+    function iconoPlay() {
+        btnPlay.textContent = audio.paused ? '▶️' : '⏸';
+    }
+    function iconoPlayRecuerdo() {
+        btnPlayRecuerdo.textContent = audioRecuerdo.paused ? '▶️' : '⏸';
+    }
+
+    function mostrarPlayers() {
+        players.classList.add('visible');
+        iconoPlay();
+        iconoPlayRecuerdo();
+    }
 
     function sonarMusica() {
-        if (!hayAudio) return;
+        if (!hayAudio) {
+            mostrarPlayers();
+            return;
+        }
+        pausarLaOtra(audio);
         var p = audio.play();
         if (p && p.catch) {
             p.then(function () {
-                fadeIn();
-                player.classList.add('visible');
-                iconoPlay();
+                fadeIn(audio);
+                mostrarPlayers();
             }).catch(function () {
-                /* El navegador no dejó arrancar solo: mostramos el control
+                /* El navegador no dejó arrancar solo: mostramos los controles
                    igual, con el ▶️, para que ella lo active si quiere. */
-                player.classList.add('visible');
-                iconoPlay();
+                mostrarPlayers();
             });
+        } else {
+            mostrarPlayers();
         }
     }
 
     btnPlay.addEventListener('click', function () {
-        if (audio.paused) { audio.play(); notasMusicales(); }
-        else { audio.pause(); }
+        if (audio.paused) {
+            pausarLaOtra(audio);
+            audio.muted = btnMute.classList.contains('apagado');
+            var p = audio.play();
+            if (p && p.catch) p.catch(function () {});
+            notasMusicales(player);
+        } else {
+            audio.pause();
+        }
         iconoPlay();
+        iconoPlayRecuerdo();
+    });
+
+    btnPlayRecuerdo.addEventListener('click', function () {
+        if (!hayRecuerdo) return;
+        if (audioRecuerdo.paused) {
+            pausarLaOtra(audioRecuerdo);
+            audioRecuerdo.muted = btnMute.classList.contains('apagado');
+            audioRecuerdo.volume = VOLUMEN;
+            var p = audioRecuerdo.play();
+            if (p && p.catch) p.catch(function () {});
+            notasMusicales(document.getElementById('player-recuerdo'));
+        } else {
+            audioRecuerdo.pause();
+        }
+        iconoPlay();
+        iconoPlayRecuerdo();
     });
 
     btnMute.addEventListener('click', function () {
-        audio.muted = !audio.muted;
-        btnMute.textContent = audio.muted ? '🔇' : '🔊';
-        btnMute.classList.toggle('apagado', audio.muted);
+        var silenciar = !audio.muted;
+        audio.muted = silenciar;
+        audioRecuerdo.muted = silenciar;
+        btnMute.textContent = silenciar ? '🔇' : '🔊';
+        btnMute.classList.toggle('apagado', silenciar);
     });
 
     audio.addEventListener('play',  iconoPlay);
     audio.addEventListener('pause', iconoPlay);
+    audioRecuerdo.addEventListener('play',  iconoPlayRecuerdo);
+    audioRecuerdo.addEventListener('pause', iconoPlayRecuerdo);
 
-    /* Notitas musicales que salen del reproductor */
-    function notasMusicales() {
+    /* Notitas musicales que salen del reproductor activo */
+    function notasMusicales(desde) {
+        var origen = desde || player;
+        var activo = !audio.paused ? audio : (!audioRecuerdo.paused ? audioRecuerdo : null);
         var notas = ['🎵', '🎶', '💕', '🎼'];
         for (var i = 0; i < 6; i++) {
             (function (i) {
                 setTimeout(function () {
-                    if (audio.paused || audio.muted) return;
-                    var r = player.getBoundingClientRect();
+                    if (!activo || activo.paused || activo.muted) return;
+                    var r = origen.getBoundingClientRect();
                     var n = document.createElement('div');
                     n.className = 'nota-musical';
                     n.textContent = notas[Math.floor(Math.random() * notas.length)];
@@ -1163,6 +1372,10 @@
     function abrirSobre() {
         if (sobrePantalla.classList.contains('abriendo')) return;
         activarSonido();
+        /* Arranca Me Quedo Aquí en el mismo toque (el navegador lo permite así). */
+        sonarMusica();
+        setTimeout(function () { notasMusicales(player); }, 700);
+
         sobrePantalla.classList.add('abriendo');
 
         var r = sobre.getBoundingClientRect();
@@ -1276,13 +1489,9 @@
         lluviaCorazones(45);
         setTimeout(function () { lluviaCorazones(35); }, 2500);
 
-        /* Ojo: esto va SIN retraso. El navegador solo deja sonar la música
-           si sale del toque mismo; dentro de un setTimeout la bloquearía. */
-        sonarMusica();
-        setTimeout(notasMusicales, 900);
-        setInterval(function () {
-            if (!audio.paused && !audio.muted) notasMusicales();
-        }, 6000);
+        /* Si ya venía sonando desde el sobre, sigue; si no, intenta arrancar. */
+        if (audio.paused) sonarMusica();
+        setTimeout(function () { notasMusicales(player); }, 900);
 
         if (navigator.vibrate) { try { navigator.vibrate([60, 40, 60, 40, 140]); } catch (err) {} }
     });
@@ -1299,10 +1508,33 @@
 
     if (yaDijoQueSi && !verDeNuevo) {
         mostrarFinal();
-        /* Sin toque previo el navegador no deja sonar: el reproductor
-           aparece con el ▶️ para que ella lo active si quiere. */
+        sonarMusica();
+    } else {
+        /* Intento al entrar; muchos navegadores lo bloquean hasta un toque.
+           Al abrir el sobre sí arranca seguro. */
         sonarMusica();
     }
+
+    /* Si el autoplay falló, el primer toque en cualquier lado arranca la canción. */
+    function arrancarConPrimerToque() {
+        if (!hayAudio) return;
+        if (!audio.paused) {
+            document.removeEventListener('pointerdown', arrancarConPrimerToque);
+            return;
+        }
+        sonarMusica();
+        if (!audio.paused) {
+            document.removeEventListener('pointerdown', arrancarConPrimerToque);
+        }
+    }
+    document.addEventListener('pointerdown', arrancarConPrimerToque, { passive: true });
+
+    setInterval(function () {
+        if (!audio.paused && !audio.muted) notasMusicales(player);
+        else if (!audioRecuerdo.paused && !audioRecuerdo.muted) {
+            notasMusicales(document.getElementById('player-recuerdo'));
+        }
+    }, 6000);
 })();
 </script>
 </body>
